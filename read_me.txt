@@ -13,3 +13,4 @@ The app is split into 4 main parts:
 Resources:
 https://geomalgorithms.com/ -"Practical Geometry Algorithms with C++ code", Daniel Sunda Phd
 https://www.youtube.com/watch?v=JtiK0DOeI4A&t=4669s Inspiration for the pathfinding algorithm. 
+TEAM MEMBERS, WATCH THE BLOODY VIDEO
