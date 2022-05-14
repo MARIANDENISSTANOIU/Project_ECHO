@@ -172,12 +172,12 @@ def create_maze(BEGIN_COORDS,END_COORDS,ASP):
     BEGIN.neighbours.append(maze[md3[1]])
     ENDING.neighbours=[maze[md2[1]]]
     ENDING.neighbours.append(maze[md4[1]])
-    print(BEGIN.LAT)
+ 
     maze[md2[1]].neighbours.append(ENDING)            
     maze[md4[1]].neighbours.append(ENDING)
     maze.append(BEGIN)
     maze.append(ENDING)  
-    print(BEGIN.LAT)
+
     ok=False
     for p in [BEGIN,ENDING]:
         for k in range(len(AIRSPACE)):

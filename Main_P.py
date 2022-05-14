@@ -166,6 +166,7 @@ class MainWindow(QtWidgets.QWidget):
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName("label")
         self.layout.addWidget(self.label, 2, 2, 2, 1)
+        self.memorised_path=False
     def initialise_map(self,MAP):
         data=io.BytesIO()
         MAP.save(data,close_file=False)
@@ -179,10 +180,12 @@ class MainWindow(QtWidgets.QWidget):
                     0:'pink'
                     }
         data2=io.BytesIO()
-        MAP2=folium.Map(location=[45.5,25.7],start_zoom=1,tiles='Stamen Terrain')
         
         paths=ptf.astar(maze[0][-2],maze[0][-1])
         path=[]
+        
+        MAP2=folium.Map(location=[(maze[0][-2].LAT+maze[0][-1].LAT)/2,(maze[0][-2].LONG+maze[0][-1].LONG)/2],start_zoom=5,tiles='Stamen Terrain')
+        
         for p in paths:
             path.append([p.LAT,p.LONG])
             folium.CircleMarker(location=[p.LAT,p.LONG],radius=8,color="blue").add_to(MAP2)
@@ -192,15 +195,25 @@ class MainWindow(QtWidgets.QWidget):
         folium.Marker(location=self.dict2[self.EndcomboBox.currentText()][::-1]).add_to(MAP2)
         
         self.initialise_map(MAP2)
-        print("Done")
+        self.memorised_path=path
     def reset_function(self):
         self.initialise_map(self.MAP)
         
     
     def export_function(self):
-        print("Export")
-        pass
-
+        if self.memorised_path:
+            data=self.memorised_path
+            
+            df_memmo=pd.DataFrame(data,columns=['LAT','LONG'])
+            folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Folder')
+            df_memmo.to_csv(path_or_buf=str(folderpath)+"/base.csv")
+        else:
+            self.label.setText("No path found or no input")
+#  file = open(name,'w')
+ #       text = self.textEdit.toPlainText()
+  #      file.write(text)
+   #     file.close()
+        
     def handle_button_data(self,msg):
         if msg[-1]=="B":
             self.StartcomboBox.setCurrentText(self.dict1[int(msg[:-1])][2])
