@@ -8,9 +8,12 @@ def h(p1,p2):
     
 def reconstruct_path(came_from,current):
     path=[current]
+  #  print("hi1")
     while current in came_from:
         current=came_from[current]
         path.append(current)
+        #print("hi")
+        #print(path)
     return path
 def astar(start, finish):
     start_node=start
@@ -33,6 +36,7 @@ def astar(start, finish):
         for neighbour in current.neighbours:
             temp_g_score=current.g+h(current,neighbour)
             if temp_g_score<neighbour.g:
+               # print(came_from)
                 came_from[neighbour]=current
                 neighbour.g=temp_g_score
                 neighbour.f=temp_g_score+h(neighbour,end_node)

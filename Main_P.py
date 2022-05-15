@@ -8,8 +8,9 @@ from PyQt5 import  QtCore, QtGui,QtWidgets
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 import branca
 import pandas as pd
-import grid_builder
+
 import pathfind as ptf
+import mapper as mp
 class Airspace():
     def __init__(self,NAME,asp_file):
         self.CODE=NAME
@@ -78,10 +79,10 @@ class MainWindow(QtWidgets.QWidget):
         df1=df.values.tolist()
             #create a dictionary data type for ease of access of the points later on
         self.dict1={df1[0][1]:[df1[0][4],df1[0][3],df1[0][2]]}
-        self.dict2={df1[0][2]:[df1[0][3],df1[0][4]]}
+        self.dict2={df1[0][2]:[df1[0][4],df1[0][3]]}
         for d in df1:
             self.dict1[d[1]]=[d[4],d[3],d[2]]
-            self.dict2[d[2]]=[d[3],d[4]]
+            self.dict2[d[2]]=[d[4],d[3]]
             self.StartcomboBox.addItem(d[2])
             self.EndcomboBox.addItem(d[2])
             #Creating the self.MAP object which will be used to display data
@@ -172,27 +173,50 @@ class MainWindow(QtWidgets.QWidget):
         MAP.save(data,close_file=False)
         
         self.webView.setHtml(data.getvalue().decode())
-    def start_function(self):
-        maze=grid_builder.create_maze(self.dict2[self.StartcomboBox.currentText()],self.dict2[self.EndcomboBox.currentText()],self.ASP)
+    #Graphical check function, to be deleted if the thing works fine
+    def fu(self,maze,BEGIN,END):
         if maze[1]==False:
             self.label.setText("Invalid Points. Select other")
         color_dict={1:'blue',
                     0:'pink'
                     }
+        MAP=folium.Map(location=[45.6,26],start_zoom=5,tiles='Stamen Terrain')
+        for p in maze[0]:
+            folium.Circle(location=[p.LAT,p.LONG],radius=100,color="red").add_to(MAP)
+        folium.CircleMarker(location=[maze[0][-2].LAT,maze[0][-2].LONG],tooltip="BEGIN",color="magenta",radius=12).add_to(MAP)
+        folium.CircleMarker(location=[maze[0][-1].LAT,maze[0][-1].LONG],tooltip="END",color="green",radius=12).add_to(MAP)
+        for p in maze[0][-1].neighbours:
+            folium.PolyLine([[maze[0][-1].LAT,maze[0][-1].LONG],[p.LAT,p.LONG]],color="blue").add_to(MAP)
+            folium.CircleMarker(location=[p.LAT,p.LONG],radius=12,color="yellow").add_to(MAP)
+        for p in maze[0][-2].neighbours:
+            folium.PolyLine([[maze[0][-2].LAT,maze[0][-2].LONG],[p.LAT,p.LONG]],color="pink").add_to(MAP)
+            folium.CircleMarker(location=[p.LAT,p.LONG],color="black",radius=12).add_to(MAP)
+        folium.Polygon(self.ASP.CONTOUR,color="black",weight=5,fill_color="red",fill_opacity=0.4).add_to(MAP)
+        
+        MAP.save("MAP2.html")
+        
+        pass
+    def start_function(self):
+        maze=mp.do_magic(self.dict2[self.StartcomboBox.currentText()],self.dict2[self.EndcomboBox.currentText()],self.ASP)
+        #self.fu(maze,self.dict2[self.StartcomboBox.currentText()],self.dict2[self.EndcomboBox.currentText()])
+        
         data2=io.BytesIO()
         
         paths=ptf.astar(maze[0][-2],maze[0][-1])
         path=[]
-        
+        #print(paths)
         MAP2=folium.Map(location=[(maze[0][-2].LAT+maze[0][-1].LAT)/2,(maze[0][-2].LONG+maze[0][-1].LONG)/2],start_zoom=5,tiles='Stamen Terrain')
+        if paths:
+            print([paths[-2].LAT,paths[-2].LONG,paths[-2].IND])
+            print([paths[-1].LAT,paths[-2].LONG,paths[-1].IND])
+            for p in paths:
+                path.append([p.LAT,p.LONG])
+                folium.CircleMarker(location=[p.LAT,p.LONG],radius=8,color="blue").add_to(MAP2)
+            folium.PolyLine(path,colour="magenta").add_to(MAP2)
         
-        for p in paths:
-            path.append([p.LAT,p.LONG])
-            folium.CircleMarker(location=[p.LAT,p.LONG],radius=8,color="blue").add_to(MAP2)
         folium.Polygon(self.ASP.CONTOUR,color="black",weight=5,fill_color="red",fill_opacity=0.4).add_to(MAP2)
-        folium.PolyLine(path,colour="magenta").add_to(MAP2)
-        folium.Marker(location=self.dict2[self.StartcomboBox.currentText()][::-1]).add_to(MAP2)
-        folium.Marker(location=self.dict2[self.EndcomboBox.currentText()][::-1]).add_to(MAP2)
+        folium.Marker(location=self.dict2[self.StartcomboBox.currentText()]).add_to(MAP2)
+        folium.Marker(location=self.dict2[self.EndcomboBox.currentText()]).add_to(MAP2)
         
         self.initialise_map(MAP2)
         self.memorised_path=path
@@ -209,10 +233,7 @@ class MainWindow(QtWidgets.QWidget):
             df_memmo.to_csv(path_or_buf=str(folderpath)+"/base.csv")
         else:
             self.label.setText("No path found or no input")
-#  file = open(name,'w')
- #       text = self.textEdit.toPlainText()
-  #      file.write(text)
-   #     file.close()
+
         
     def handle_button_data(self,msg):
         if msg[-1]=="B":
