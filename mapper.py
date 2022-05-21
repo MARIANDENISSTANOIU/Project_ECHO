@@ -192,7 +192,7 @@ def do_magic_circle(BEGIN_COORDS,END_COORDS,ASP):
             #checks the point p with every edge of the ASP to see if it's closer than 5NM
             d=math.sqrt((ASP.centroid[0]*60-p.LAT*60)*(ASP.centroid[0]*60-p.LAT*60)+(ASP.centroid[1]*60-p.LONG*60)*(ASP.centroid[1]*60-p.LONG*60) )
             d=GRC([p.LAT,p.LONG],[ASP.centroid[0],ASP.centroid[1]]).km/1.852
-            if d<ASP.rad+5/60:
+            if d<ASP.rad+5:
                 print(Geometrics.distance([p.LAT*60,p.LONG*60],[ASP.centroid[0]*60,ASP.centroid[1]*60]))
                 ok=True           # Which are the closest 2 neighbours of STAR/BEGIN nodes and ENDING node   
             if md1[0]>dist(p,BEGIN) and p.VALID!=0:
