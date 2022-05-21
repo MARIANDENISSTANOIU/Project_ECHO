@@ -1,10 +1,10 @@
 import math
 from queue import PriorityQueue
-
+from geopy.distance import great_circle as GRC
 def h(p1,p2):
     x1,y1=p1.pos
     x2,y2=p2.pos
-    return math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))
+    return GRC([x1,y1],[x2,y2]).km/1.852
     
 def reconstruct_path(came_from,current):
     path=[current]
